@@ -1,0 +1,25 @@
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.group {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #f8f8f8;
+}
+
+.grid {
+    display: grid;
+    align-content: center;
+    row-gap: 5px;
+}
+
+.route {
+    border-radius: 10px;
+}
+
+.grid > div {
+    padding: 10px;
+}

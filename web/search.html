@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Gtfs timetable</title>
+    <style>
+        .selected {
+            color: blueviolet;
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="api.js"></script>
+    <script src="storage.js"></script>
+</head>
+
+<body>
+    
+    <div>
+        <span>Stop name:</span>
+        <input id="searchInput" onkeyup="keyup(event)" />
+        <button onclick="search()">Search</button>
+    </div>
+    <div id="content" class="flex">
+
+    </div>
+    <div id="error"></div>
+
+    <script>
+/**
+ * Handles enter key ups.
+ * @param {KeyboardEvent} e event data
+ * @return {void}
+ */
+function keyup(e) {
+    // If enter is pressed
+    if (e.keyCode == 13) {
+        search();
+    }
+}
+
+/**
+ * Triggers the search if it is valid.
+ * @return {void}
+ */
+function search() {
+    /**
+     * @type HTMLInputElement
+     */
+    const searchInput = document.getElementById("searchInput");
+    const searchText = searchInput.value;
+    if (searchText != null && searchText.length > 1) {
+        fetchStops(searchText);
+    }
+}
+
+/**
+ * Fetches stops.
+ * @param {string} stopName part of the stop name
+ * @return {Promise<void>}
+ */
+function fetchStops(stopName) {
+    return api.fetchStops(stopName).then(res => {
+        document.getElementById("error").innerText = "";
+        const content = document.getElementById("content");
+        const children = res.map(s => {
+            const stopDiv = document.createElement("div");
+            stopDiv.className = "group";
+            const stopTitle = document.createElement("h2");
+            stopTitle.innerText = `${s.stopName} ${s.id}`;
+            stopTitle.className = storage.isSelected(s.id) ? "selected" : "";
+            stopTitle.onclick = () => {
+                stopTitle.className = storage.switchSelection(s.id) ? "selected" : "";
+            };
+            const stopTable = document.createElement("div");
+            stopTable.className = "grid";
+            stopTable.style = "grid-template-columns: auto auto;";
+            s.routes.forEach(r => {
+                const name = document.createElement("div");
+                name.className = "route";
+                name.style = `color: #${r.textColor}; background-color: #${r.color};`
+                name.innerText = r.name;
+
+                const headsign = document.createElement("div");
+                headsign.innerText = r.headSign;
+
+                stopTable.appendChild(name);
+                stopTable.appendChild(headsign);
+            })
+            stopDiv.appendChild(stopTitle);
+            stopDiv.appendChild(stopTable);
+            return stopDiv;
+        });
+        content.replaceChildren(...children);
+    }, err => document.getElementById("error").innerText = err.toString());
+}
+    </script>
+</body>
+
+</html> 

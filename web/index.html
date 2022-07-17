@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gtfs timetable</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="api.js"></script>
+    <script src="storage.js"></script>
+</head>
+
+<body>
+    
+    <div id="content" class="flex">
+
+    </div>
+    <div id="error"></div>
+
+    <script>
+
+/**
+ * Fetches upcoming.
+ * @param {string[]} stopIds IDs of the stops
+ * @param {string} until until when the data is queried
+ * @return {Promise<void>}
+ */
+function fetchUpcoming(stopIds, until) {
+    return api.fetchUpcoming(stopIds, until).then(res => {
+        document.getElementById("error").innerText = "";
+        const content = document.getElementById("content");
+        const children = res.map(r => {
+            const stopDiv = document.createElement("div");
+            stopDiv.className = "group";
+            const stopTitle = document.createElement("h2");
+            stopTitle.innerText = r.stopName;
+            const stopTable = document.createElement("div");
+            stopTable.className = "grid";
+            stopTable.style = "grid-template-columns: auto auto auto;";
+            r.departures.forEach(d => {
+                const departure = document.createElement("div");
+                departure.innerText = d.departureTime;
+
+                const name = document.createElement("div");
+                name.className = "route";
+                name.style = `color: #${d.route.textColor}; background-color: #${d.route.color};`
+                name.innerText = d.route.name;
+
+                const headsign = document.createElement("div");
+                headsign.innerText = d.route.headSign;
+
+                stopTable.appendChild(departure);
+                stopTable.appendChild(name);
+                stopTable.appendChild(headsign);
+            })
+            stopDiv.appendChild(stopTitle);
+            stopDiv.appendChild(stopTable);
+            return stopDiv;
+        });
+        content.replaceChildren(...children);
+    }, err => document.getElementById("error").innerText = err.toString());
+}
+/**
+ * @type string[]
+ */
+const selected = storage.getSelectedStopIds();
+if (selected.length === 0) {
+    window.location.replace("/search.html")
+} else {
+    fetchUpcoming(selected);
+}
+    </script>
+</body>
+
+</html> 
